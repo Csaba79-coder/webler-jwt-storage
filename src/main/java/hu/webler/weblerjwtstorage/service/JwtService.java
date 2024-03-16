@@ -5,8 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -46,8 +46,8 @@ public class JwtService {
     }
 
     public boolean isValidToken(String token, UserDetails userDetails) {
-        final String USER_NAME = extractUsername(token);
-        return (USER_NAME.equals(userDetails.getUsername()) && !isExpiredToken(token));
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isExpiredToken(token);
     }
 
     private boolean isExpiredToken(String token) {
@@ -64,7 +64,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 24 hours + 1000 millis
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -79,7 +79,15 @@ public class JwtService {
         Map<String, Object> standardClaims = new HashMap<>();
         standardClaims.put("sub", userDetails.getUsername());
         standardClaims.put("iat", new Date(System.currentTimeMillis()));
-        standardClaims.put("exp", new Date(System.currentTimeMillis() + 1000 * 60 * 24));
+        standardClaims.put("exp", new Date(System.currentTimeMillis() + 1000 * 60 * 24)); // 24 hours + 1000 millis
         return standardClaims;
+    }
+
+    public String extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
