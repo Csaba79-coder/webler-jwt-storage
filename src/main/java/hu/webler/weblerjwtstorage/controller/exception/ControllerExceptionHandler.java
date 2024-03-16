@@ -1,4 +1,4 @@
-package hu.webler.weblerjwtstorage.exception;
+package hu.webler.weblerjwtstorage.controller.exception;
 
 import hu.webler.weblerjwtstorage.user.value.ErrorCode;
 import org.springframework.http.HttpStatus;
